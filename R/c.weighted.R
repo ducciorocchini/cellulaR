@@ -116,7 +116,7 @@ plot_grid <- function(grid, prob_map, title = "") {
     )
 }
   
-# --- 8. Run simulation ---
+  # --- 8. Run simulation ---
 plots <- list()
 cover <- numeric(num_iterations + 1)
 cover[1] <- sum(grid) / (n_rows * n_cols)
@@ -134,8 +134,9 @@ for (i in 0:num_iterations) {
   if (i %in% plot_iterations) {
     p <- plot_grid(grid, growth_prob_map, paste("Iteration", i)) +
       theme(
-        axis.text.x = element_text(size = 6),  # smaller x-axis labels
-        axis.text.y = element_text(size = 6)   # smaller y-axis labels
+        axis.text.x = element_text(size = 6),    # smaller x-axis labels
+        axis.text.y = element_text(size = 6),    # smaller y-axis labels
+        plot.title = element_text(size = 16, face = "bold")  # bigger title
       )
     plots[[length(plots) + 1]] <- p
   }
