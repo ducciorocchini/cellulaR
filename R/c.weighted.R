@@ -116,23 +116,29 @@ plot_grid <- function(grid, prob_map, title = "") {
     )
 }
   
-  # --- 8. Run simulation ---
-  plots <- list()
-  cover <- numeric(num_iterations + 1)
-  cover[1] <- sum(grid) / (n_rows * n_cols)
+# --- 8. Run simulation ---
+plots <- list()
+cover <- numeric(num_iterations + 1)
+cover[1] <- sum(grid) / (n_rows * n_cols)
+
+# Plot iteration 0
+plots[[1]] <- plot_grid(grid, growth_prob_map, "Iteration 0")
+
+# Keep track of iterations to include in forest_evolution
+extra_iterations <- c(60, 70, 80)
+
+for (i in 1:num_iterations) {
+  grid <- update_grid(grid, growth_prob_map)
+  cover[i + 1] <- sum(grid) / (n_rows * n_cols)
   
-  plots[[1]] <- plot_grid(grid, growth_prob_map, "Iteration 0")
-  
-  for (i in 1:num_iterations) {
-    grid <- update_grid(grid, growth_prob_map)
-    cover[i + 1] <- sum(grid) / (n_rows * n_cols)
-    
-    if (i %% plot_interval == 0) {
-      plots[[length(plots) + 1]] <- plot_grid(grid, growth_prob_map, paste("Iteration", i))
-    }
+  # Plot at intervals
+  if (i %% plot_interval == 0 || i %in% extra_iterations) {
+    plots[[length(plots) + 1]] <- plot_grid(grid, growth_prob_map, paste("Iteration", i))
   }
-  
-  final_plot <- wrap_plots(plots, ncol = 3)
+}
+
+# Arrange into a 3x3 grid
+final_plot <- wrap_plots(plots, ncol = 3)
   
   # --- 9. Vegetation cover time series ---
   cover_df <- tibble(
