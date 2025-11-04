@@ -121,8 +121,8 @@ plots <- list()
 cover <- numeric(num_iterations + 1)
 cover[1] <- sum(grid) / (n_rows * n_cols)
 
-# Define iterations to include in the final 3x3 forest evolution grid
-plot_iterations <- c(0, 10, 20, 30, 40, 50, 60, 70, 80)
+# Automatically pick 9 iterations (including 0 and the last iteration)
+plot_iterations <- round(seq(0, num_iterations, length.out = 9))
 
 # Run simulation
 for (i in 0:num_iterations) {
@@ -132,10 +132,15 @@ for (i in 0:num_iterations) {
   }
   
   if (i %in% plot_iterations) {
-    plots[[length(plots) + 1]] <- plot_grid(grid, growth_prob_map, paste("Iteration", i))
+    p <- plot_grid(grid, growth_prob_map, paste("Iteration", i)) +
+      theme(
+        axis.text.x = element_text(size = 6),  # smaller x-axis labels
+        axis.text.y = element_text(size = 6)   # smaller y-axis labels
+      )
+    plots[[length(plots) + 1]] <- p
   }
 }
-  
+
 # Arrange plots into a 3x3 grid
 final_plot <- wrap_plots(plots, ncol = 3)
   
