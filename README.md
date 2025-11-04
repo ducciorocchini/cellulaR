@@ -122,3 +122,13 @@ weighted_results$cover_data
   * Growth and death probabilities
   * Grid size and simulation duration
 
+# Dependencies
+Install the following packages to properly run `cellulaR` functions:
+
++ ambient
++ ggplot2
++ patchwork
++ tidyverse
++ viridis
+
+
