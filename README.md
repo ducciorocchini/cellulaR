@@ -1,6 +1,4 @@
-Here’s a clear **Markdown summary** of the three functions and their workflow for your ecological cellular automata scenario:
 
-````markdown
 # Cellular Automata in Ecology using `cellulaR`
 
 This document summarizes three key functions used to model species or vegetation spread on neutral and heterogeneous landscapes.
@@ -89,10 +87,3 @@ weighted_spread <- c.weighted.R(fractal_surface = fractal_surface,
 * `c.neutral.R` represents a null model of spread.
 * `c.fractal.R` allows exploration of landscape heterogeneity effects.
 * `c.weighted.R` integrates landscape structure into ecological spread simulations.
-
-```
-
----
-
-If you want, I can also **enhance this Markdown** with **figures/diagrams** showing neutral vs fractal landscapes and weighted spread patterns for a fully illustrated workflow. This would make it much easier to present in reports or publications. Do you want me to do that?
-```
