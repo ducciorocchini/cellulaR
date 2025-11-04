@@ -121,23 +121,22 @@ plots <- list()
 cover <- numeric(num_iterations + 1)
 cover[1] <- sum(grid) / (n_rows * n_cols)
 
-# Plot iteration 0
-plots[[1]] <- plot_grid(grid, growth_prob_map, "Iteration 0")
+# Define iterations to include in the final 3x3 forest evolution grid
+plot_iterations <- c(0, 10, 20, 30, 40, 50, 60, 70, 80)
 
-# Keep track of iterations to include in forest_evolution
-extra_iterations <- c(60, 70, 80)
+# Plot initial grid (iteration 0)
+plots[[1]] <- plot_grid(grid, growth_prob_map, "Iteration 0")
 
 for (i in 1:num_iterations) {
   grid <- update_grid(grid, growth_prob_map)
   cover[i + 1] <- sum(grid) / (n_rows * n_cols)
   
-  # Plot at intervals
-  if (i %% plot_interval == 0 || i %in% extra_iterations) {
+  if (i %in% plot_iterations) {
     plots[[length(plots) + 1]] <- plot_grid(grid, growth_prob_map, paste("Iteration", i))
   }
 }
 
-# Arrange into a 3x3 grid
+# Arrange plots into a 3x3 grid
 final_plot <- wrap_plots(plots, ncol = 3)
   
   # --- 9. Vegetation cover time series ---
