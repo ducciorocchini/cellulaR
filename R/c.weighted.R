@@ -135,7 +135,7 @@ for (i in 0:num_iterations) {
     plots[[length(plots) + 1]] <- plot_grid(grid, growth_prob_map, paste("Iteration", i))
   }
 }
-
+  
 # Arrange plots into a 3x3 grid
 final_plot <- wrap_plots(plots, ncol = 3)
   
