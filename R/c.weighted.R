@@ -94,24 +94,27 @@ c.weighted <- function(num_iterations = 50, plot_interval = 10,
       )
   }
   
-  plot_grid <- function(grid, prob_map, title = "") {
-    df <- expand.grid(x = 1:ncol(grid), y = 1:nrow(grid))
-    df$value <- as.vector(grid)
-    df$prob <- as.vector(prob_map)
-    
-    ggplot(df, aes(x = x, y = y)) +
-      geom_raster(aes(fill = ifelse(value == 1, prob, NA))) +
-      scale_fill_viridis(option = "C", na.value = "white", direction = -1) +
-      labs(title = title, fill = "Probability") +
-      coord_equal() +
-      theme_minimal() +
-      theme(
-        axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        panel.grid = element_blank(),
-        plot.title = element_text(hjust = 0.5)
-      )
-  }
+ plot_grid <- function(grid, prob_map, title = "") {
+  df <- expand.grid(x = 1:ncol(grid), y = 1:nrow(grid))
+  df$value <- as.vector(grid)
+  df$prob <- as.vector(prob_map)
+  
+  ggplot(df, aes(x = x, y = y)) +
+    geom_raster(aes(fill = ifelse(value == 1, prob, NA))) +
+    scale_fill_viridis(option = "C", na.value = "white", direction = -1) +
+    labs(title = title, fill = "Prob.") +  # shorter legend title
+    coord_equal() +
+    theme_minimal() +
+    theme(
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      panel.grid = element_blank(),
+      plot.title = element_text(hjust = 0.5),
+      legend.title = element_text(size = 8),   # smaller legend title
+      legend.text = element_text(size = 6),    # smaller legend labels
+      legend.key.size = unit(0.4, "cm")        # smaller legend key
+    )
+}
   
   # --- 8. Run simulation ---
   plots <- list()
