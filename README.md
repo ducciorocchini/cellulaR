@@ -5,85 +5,120 @@ This document summarizes three key functions used to model species or vegetation
 
 ---
 
-## 1. `c.neutral.R`
+## 1. `c.neutral()`
 
 **Purpose:**  
-Simulates the spread of a variable (e.g., forest cover) on a neutral landscape with no spatial heterogeneity.
+Simulates vegetation (or species) spread on a **neutral landscape**—all locations are equivalent, and spread occurs via simple local neighborhood rules.
 
-**Typical Parameters:**
-- `grid_size`: dimensions of the landscape (rows × columns)
-- `initial_seeds`: starting locations of the variable
-- `timesteps`: number of iterations for the spread
-- `spread_rule`: probability or neighbourhood for propagation
+**Key Features:**
+- Random initialization of vegetation in a grid
+- Growth occurs if at least one neighboring cell is vegetated
+- 10% chance for empty cells to become vegetated
+- 2% chance of vegetated cells dying (environmental stress)
+- Visualizes growth over iterations using `ggplot2` and `patchwork`
 
-**Output:**  
-Matrix or raster representing the neutral spread pattern.
+**Inputs / Parameters:**
+- `num_iterations` (default 50): Number of simulation steps
+- `plot_interval` (default 10): Frequency of plots to visualize evolution
+
+**Outputs:**
+- Multi-panel plot showing vegetation spread over time
 
 ---
 
-## 2. `c.fractal.R`
+## 2. `c.fractal()`
 
 **Purpose:**  
-Generates a fractal landscape to represent spatial heterogeneity (e.g., patchiness, suitability).
+Generates a **fractal landscape** to represent heterogeneous spatial patterns using Perlin noise.
 
-**Typical Parameters:**
-- `grid_size`: landscape dimensions
-- `fractal_dimension`: controls patchiness/heterogeneity
-- `value_range`: minimum and maximum suitability values
-- `variance` (optional): controls roughness of the landscape
+**Key Features:**
+- Creates a 100×100 fractal landscape
+- Uses multiple octaves to produce realistic variability
+- Converts matrix to tidy format for plotting
+- Visualizes using `ggplot2` with reversed `viridis` color scale
 
-**Output:**  
-Matrix/raster of heterogeneity values to use as a weighted surface.
+**Inputs / Parameters:**  
+- No explicit parameters in current version (grid size, frequency, and octaves are fixed, but can be modified in the code)
+
+**Outputs:**
+- Fractal terrain plot representing elevation or suitability
 
 ---
 
-## 3. `c.weighted.R`
+## 3. `c.weighted()`
 
 **Purpose:**  
-Simulates spread of a species or variable on a **weighted landscape** using the fractal surface from `c.fractal.R`.
+Simulates vegetation (or species) spread on a **heterogeneous fractal landscape**, where growth probability depends on both elevation and local slope.
 
-**Typical Parameters:**
-- `fractal_surface`: input matrix from `c.fractal.R`
-- `initial_seeds`: starting locations of the variable
-- `spread_rule`: neighbourhood definition for propagation
-- `weighting_function`: how heterogeneity influences spread probability
-- `timesteps`: number of iterations
+**Key Features:**
+- Generates a fractal terrain using Perlin noise
+- Computes slope (roughness) to adjust growth probability
+- Growth probability = `base_growth * (1 - terrain) * (1 - slope)`
+- Vegetation spread depends on neighbors and local probability
+- Includes vegetation death probability
+- Produces multiple visualization layers:
+  - Fractal terrain (elevation)
+  - Slope (steepness)
+  - Growth probability map
+  - Vegetation evolution over time
+  - Vegetation cover over time (line chart)
+  
+**Inputs / Parameters:**
+- `num_iterations` (default 50): Number of simulation steps
+- `plot_interval` (default 10): Frequency of plots
+- `n_rows`, `n_cols` (default 100): Grid dimensions
+- `frequency`, `octaves`: Controls fractal terrain detail
+- `base_growth` (default 0.1): Base growth probability
+- `death_prob` (default 0.02): Probability of vegetation dying
+- `seed` (optional): For reproducibility
 
-**Output:**  
-Matrix/time series showing spread over the heterogeneous landscape.
+**Outputs:**
+- List of plots and data:
+  - `terrain_plot`: Fractal terrain
+  - `slope_plot`: Terrain slope
+  - `probability_plot`: Spatial growth probability
+  - `forest_evolution`: Vegetation spread over time (multi-panel)
+  - `cover_plot`: Vegetation cover (%) over time
+  - `cover_data`: Vegetation cover data frame
 
 ---
 
 ## Workflow Example
 
-1. **Neutral baseline:**  
 ```r
-neutral_land <- c.neutral.R(grid_size = c(50, 50), initial_seeds = 10, timesteps = 20)
-````
+# 1. Neutral spread
+neutral_plot <- c.neutral(num_iterations = 50, plot_interval = 10)
 
-2. **Create heterogeneous surface:**
+# 2. Generate fractal landscape
+c.fractal()  # Produces a plot of terrain (fractal heterogeneity)
 
-```r
-fractal_surface <- c.fractal.R(grid_size = c(50, 50), fractal_dimension = 1.5)
+# 3. Weighted spread on fractal landscape
+weighted_results <- c.weighted(
+  num_iterations = 50,
+  plot_interval = 10,
+  n_rows = 100, n_cols = 100,
+  frequency = 0.05, octaves = 5,
+  base_growth = 0.1, death_prob = 0.02,
+  seed = 42
+)
+
+# Access outputs
+weighted_results$terrain_plot
+weighted_results$slope_plot
+weighted_results$probability_plot
+weighted_results$forest_evolution
+weighted_results$cover_plot
+weighted_results$cover_data
 ```
 
-3. **Weighted spread on fractal landscape:**
+## Notes
 
-```r
-weighted_spread <- c.weighted.R(fractal_surface = fractal_surface,
-                                initial_seeds = 10,
-                                timesteps = 20)
-```
+* `c.neutral()` represents a **baseline null model** without environmental heterogeneity.
+* `c.fractal()` allows exploration of **landscape heterogeneity**.
+* `c.weighted()` integrates **terrain and slope** effects into species or vegetation spread, providing realistic ecological simulations.
+* The workflow can be adapted for sensitivity analysis by adjusting:
 
-4. **Compare results:**
+  * Fractal terrain parameters (`frequency`, `octaves`)
+  * Growth and death probabilities
+  * Grid size and simulation duration
 
-* Neutral vs weighted spread patterns
-* Sensitivity analysis by varying fractal dimension or weighting
-
----
-
-**Notes:**
-
-* `c.neutral.R` represents a null model of spread.
-* `c.fractal.R` allows exploration of landscape heterogeneity effects.
-* `c.weighted.R` integrates landscape structure into ecological spread simulations.
