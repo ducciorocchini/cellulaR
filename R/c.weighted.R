@@ -1,4 +1,4 @@
-c.weighted <- function(num_iterations = 50, plot_interval = 10,
+c.weighted <- function(num_iterations = 100, plot_interval = 20,
                                                   n_rows = 100, n_cols = 100,
                                                   frequency = 0.05, octaves = 5,
                                                   base_growth = 0.1, death_prob = 0.02,
