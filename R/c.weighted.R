@@ -102,7 +102,7 @@ c.weighted <- function(num_iterations = 50, plot_interval = 10,
     ggplot(df, aes(x = x, y = y)) +
       geom_raster(aes(fill = ifelse(value == 1, prob, NA))) +
       scale_fill_viridis(option = "C", na.value = "white", direction = -1) +
-      labs(title = title, fill = "Growth Probability (vegetated)") +
+      labs(title = title, fill = "Probability") +
       coord_equal() +
       theme_minimal() +
       theme(
