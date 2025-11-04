@@ -124,12 +124,12 @@ cover[1] <- sum(grid) / (n_rows * n_cols)
 # Define iterations to include in the final 3x3 forest evolution grid
 plot_iterations <- c(0, 10, 20, 30, 40, 50, 60, 70, 80)
 
-# Plot initial grid (iteration 0)
-plots[[1]] <- plot_grid(grid, growth_prob_map, "Iteration 0")
-
-for (i in 1:num_iterations) {
-  grid <- update_grid(grid, growth_prob_map)
-  cover[i + 1] <- sum(grid) / (n_rows * n_cols)
+# Run simulation
+for (i in 0:num_iterations) {
+  if (i > 0) {
+    grid <- update_grid(grid, growth_prob_map)
+    cover[i + 1] <- sum(grid) / (n_rows * n_cols)
+  }
   
   if (i %in% plot_iterations) {
     plots[[length(plots) + 1]] <- plot_grid(grid, growth_prob_map, paste("Iteration", i))
