@@ -102,17 +102,17 @@ plot_grid <- function(grid, prob_map, title = "") {
   ggplot(df, aes(x = x, y = y)) +
     geom_raster(aes(fill = ifelse(value == 1, prob, NA))) +
     scale_fill_viridis(option = "C", na.value = "white", direction = -1) +
-    labs(title = title, fill = "Prob.") +  # shorter legend title
-    coord_equal() +
+    labs(title = title, fill = "Growth Probability") +
+    coord_equal(expand = FALSE) +  # removes extra space around maps
     theme_minimal() +
     theme(
       axis.text = element_blank(),
       axis.ticks = element_blank(),
       panel.grid = element_blank(),
-      plot.title = element_text(hjust = 0.5, size = 8),  # smaller iteration titles
+      plot.title = element_text(hjust = 0.5, size = 10),   # slightly bigger iteration titles
       legend.title = element_text(size = 8),   # smaller legend title
       legend.text = element_text(size = 6),    # smaller legend labels
-      legend.key.size = unit(0.4, "cm")        # smaller legend key
+      legend.key.size = unit(0.4, "cm")        # smaller legend keys
     )
 }
   
