@@ -134,9 +134,11 @@ for (i in 0:num_iterations) {
   if (i %in% plot_iterations) {
     p <- plot_grid(grid, growth_prob_map, paste("Iteration", i)) +
       theme(
-        axis.text.x = element_text(size = 6),    # smaller x-axis labels
-        axis.text.y = element_text(size = 6),    # smaller y-axis labels
-        plot.title = element_text(size = 16, face = "bold")  # bigger title
+        axis.text.x = element_text(size = 6),    # x-axis labels
+        axis.text.y = element_text(size = 6),    # y-axis labels
+        axis.title.x = element_text(size = 8),   # x-axis title 
+        axis.title.y = element_text(size = 8),   # y-axis title 
+        plot.title = element_text(size = 10)  # bigger title
       )
     plots[[length(plots) + 1]] <- p
   }
