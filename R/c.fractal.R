@@ -1,3 +1,9 @@
+#' Create fractal landscape
+#'
+#' @param x A raster object
+#' @return A raster
+#' @export
+
 c.fractal <- function() {
   
 # Load packages
