@@ -1,3 +1,9 @@
+#' Weight spread across slopes
+#'
+#' @param x A raster object
+#' @return A raster
+#' @export
+
 c.weighted <- function(num_iterations = 100, plot_interval = 20,
                                                   n_rows = 100, n_cols = 100,
                                                   frequency = 0.05, octaves = 5,
