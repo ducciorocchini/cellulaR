@@ -1,3 +1,9 @@
+#' Neutral CA
+#'
+#' @param x A raster object
+#' @return A raster
+#' @export
+
 c.neutral <- function(num_iterations = 50, plot_interval = 10){
   
   # Load necessary libraries
