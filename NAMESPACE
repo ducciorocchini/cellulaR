@@ -1,0 +1,25 @@
+# Export the main user functions
+export(c.neutral)
+export(c.fractal)
+export(c.weighted)
+
+# Imports from tidyverse packages
+import(ggplot2)
+import(ambient)
+import(patchwork)
+import(tibble)
+import(dplyr)
+import(tidyr)
+import(viridis)
+
+# Import specific generics if needed
+importFrom(stats, runif)
+importFrom(stats, rnorm)
+importFrom(stats, sample)
+
+# Ensure namespaces are loaded for plotting
+importFrom(ggplot2, ggplot)
+importFrom(ggplot2, aes)
+importFrom(ggplot2, geom_raster)
+importFrom(ggplot2, labs)
+importFrom(ggplot2, theme_minimal)
