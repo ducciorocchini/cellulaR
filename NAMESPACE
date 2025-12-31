@@ -15,7 +15,6 @@ import(viridis)
 # Import specific generics if needed
 importFrom(stats, runif)
 importFrom(stats, rnorm)
-importFrom(stats, sample)
 
 # Ensure namespaces are loaded for plotting
 importFrom(ggplot2, ggplot)
