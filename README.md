@@ -3,6 +3,14 @@
 
 This document summarizes three key functions used to model species or vegetation spread on neutral and heterogeneous landscapes.
 
+<p align="center">
+  <img 
+    src="https://github.com/user-attachments/assets/da422196-9415-4c40-ba7c-f02eff75233a"
+    alt="cellulaR"
+    width="300"
+  />
+</p>
+
 ---
 
 ## 1. `c.neutral()`
