@@ -5,7 +5,7 @@ This document summarizes three key functions used to model species or vegetation
 
 <p align="center">
   <img 
-    src="https://github.com/user-attachments/assets/da422196-9415-4c40-ba7c-f02eff75233a"
+    src="https://github.com/user-attachments/assets/d6c6b8a4-66b4-4ebc-9c4e-eaf899eea38f"
     alt="cellulaR"
     width="300"
   />
