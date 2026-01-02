@@ -1,250 +1,233 @@
-# **cellulaR: Cellular Automata for Ecological Simulation**
+# Cellular Automata in Ecology using `cellulaR`
 
-**Author:** Duccio Rocchini
-**Repository:** [github.com/ducciorocchini/cellulaR](https://github.com/ducciorocchini/cellulaR)
+`cellulaR` is a lightweight R package to explore **cellular automata** for vegetation/species spread under:
 
----
+* **Neutral landscapes** (all cells equivalent; null model)
+* **Heterogeneous landscapes** generated as **fractal surfaces** (Perlin noise)
+* **Environment-weighted spread** where local growth depends on terrain and roughness (slope)
 
-## 📘 Overview
-
-**cellulaR** is an R package designed to simulate spatial ecological dynamics using **cellular automata (CA)**.
-It provides three core functions that can be used sequentially or independently:
-
-1. `c.neutral()` – a neutral vegetation spread model on a homogeneous grid.
-2. `c.fractal()` – a fractal‐landscape generator using Perlin noise to represent spatial heterogeneity.
-3. `c.weighted()` – a weighted spread model that combines local neighbourhood dynamics with spatial heterogeneity.
-
-These models together allow researchers to explore how spatial structure, local interactions, and environmental heterogeneity shape vegetation and species spread through landscapes.
+The package currently revolves around three main functions: `c.neutral()`, `c.fractal()`, and `c.weighted()`. ([GitHub][1])
 
 ---
 
-## 🧩 Installation
+## Installation
+
+### From GitHub
 
 ```r
-install.packages("remotes")
+# install.packages("remotes")
 remotes::install_github("ducciorocchini/cellulaR")
-library(cellulaR)
 ```
 
----
-
-## ⚙️ Function Reference
-
----
-
-### `c.neutral()`
-
-#### **Description**
-
-Simulates vegetation or species spread across a **homogeneous grid**.
-Growth (colonisation) and mortality are governed by probabilistic neighbourhood rules.
-
-#### **Usage**
-
-```r
-c.neutral(
-  num_iterations = ,
-  grid_size = ,
-  colonisation_rate = ,
-  mortality_rate = ,
-  plot_interval = 
-)
-```
-
-#### **Arguments**
-
-| Argument            | Description                                            |
-| ------------------- | ------------------------------------------------------ |
-| `num_iterations`    | Number of time steps to run the simulation.            |
-| `grid_size`         | Grid dimension (e.g., 50 for a 50×50 grid).            |
-| `colonisation_rate` | Probability of colonisation of neighbouring cells.     |
-| `mortality_rate`    | Probability of vegetation death.                       |
-| `plot_interval`     | Frequency (in iterations) at which plots are produced. |
-
-#### **Value**
-
-Returns a list containing:
-
-* Time‐series of grid states.
-* Summary statistics (e.g., vegetation cover over time).
-* Parameter settings used.
-
-#### **Example**
-
-```r
-sim1 <- c.neutral(
-  num_iterations = 100,
-  grid_size = 50,
-  colonisation_rate = 0.04,
-  mortality_rate = 0.01,
-  plot_interval = 10
-)
-```
-
----
-
-### `c.fractal()`
-
-#### **Description**
-
-Generates a **synthetic fractal landscape** using Perlin noise to represent continuous environmental heterogeneity.
-The resulting surface can serve as a spatial foundation for CA spread models.
-
-#### **Usage**
-
-```r
-c.fractal(
-  n = ,
-  octaves = ,
-  frequency = ,
-  amplitude = 
-)
-```
-
-#### **Arguments**
-
-| Argument    | Description                                          |
-| ----------- | ---------------------------------------------------- |
-| `n`         | Grid dimension (e.g., 100 for a 100×100 grid).       |
-| `octaves`   | Number of noise layers controlling scale complexity. |
-| `frequency` | Base frequency of the noise pattern.                 |
-| `amplitude` | Amplitude of the noise.                              |
-
-#### **Value**
-
-A numeric matrix (or raster) representing a continuous surface of habitat suitability or elevation.
-
-#### **Example**
-
-```r
-land <- c.fractal(
-  n = 100,
-  octaves = 4,
-  frequency = 0.1,
-  amplitude = 1.0
-)
-```
-
----
-
-### `c.weighted()`
-
-#### **Description**
-
-Combines **local CA dynamics** from `c.neutral()` with **spatial heterogeneity** from `c.fractal()`.
-The function modulates colonisation and mortality probabilities by a weight field (e.g., habitat suitability map).
-
-#### **Usage**
-
-```r
-c.weighted(
-  num_iterations = ,
-  landscape = ,
-  weight_field = ,
-  colonisation_rate = ,
-  mortality_rate = ,
-  plot_interval = 
-)
-```
-
-#### **Arguments**
-
-| Argument            | Description                                                             |
-| ------------------- | ----------------------------------------------------------------------- |
-| `num_iterations`    | Number of time steps.                                                   |
-| `landscape`         | Matrix or raster from `c.fractal()` representing spatial heterogeneity. |
-| `weight_field`      | Weight map modulating transition probabilities.                         |
-| `colonisation_rate` | Baseline probability of colonisation.                                   |
-| `mortality_rate`    | Baseline probability of death.                                          |
-| `plot_interval`     | Frequency of visualization updates.                                     |
-
-#### **Outputs**
-
-##### **1. Landscape State Time-Series**
-
-A list or array of landscape states at each iteration (or at selected intervals).
-Each element represents the grid configuration—empty vs. vegetated cells—over time.
-Useful for visualising spread dynamics and computing landscape metrics such as total vegetation cover, patch size distribution, or fragmentation.
-
-##### **2. Summary Statistics**
-
-A data frame or list of key metrics such as:
-
-* Total vegetated area over time
-* Colonisation and mortality counts
-* Patch connectivity and fragmentation indices
-
-These metrics allow quantitative comparison across scenarios with different parameters or heterogeneity levels.
-
-##### **3. Final Simulation Object**
-
-A comprehensive output object (e.g., class `cellulaR_sim`) containing:
-
-* All landscape states
-* Summary statistics
-* Input parameters and weight fields
-  This structure allows downstream analysis, reproducibility, and re‐simulation from intermediate states.
-
-#### **Example**
-
-```r
-weighted_sim <- c.weighted(
-  num_iterations = 200,
-  landscape = land,
-  weight_field = land,
-  colonisation_rate = 0.05,
-  mortality_rate = 0.02,
-  plot_interval = 20
-)
-```
-
----
-
-## 🔄 Workflow Example
-
-A typical modelling workflow combines all three functions:
+### Load the package
 
 ```r
 library(cellulaR)
-
-# 1. Neutral spread
-neutral_sim <- c.neutral(num_iterations = 50, grid_size = 50)
-
-# 2. Fractal landscape
-fractal_map <- c.fractal(n = 100, octaves = 4, frequency = 0.1)
-
-# 3. Weighted spread
-weighted_sim <- c.weighted(
-  num_iterations = 200,
-  landscape = fractal_map,
-  weight_field = fractal_map,
-  colonisation_rate = 0.05,
-  mortality_rate = 0.02
-)
 ```
 
-This sequential approach demonstrates how environmental heterogeneity can alter spread dynamics compared to a neutral baseline.
+---
+
+## Dependencies
+
+Install these packages to run all examples and plots:
+
+```r
+install.packages(c("ambient", "ggplot2", "patchwork", "tidyverse", "viridis"))
+```
+
+These are the packages used by the functions for landscape generation and visualization. ([GitHub][1])
 
 ---
 
-## 📊 Interpretation and Extensions
+## Quick start
 
-The `c.weighted()` model supports extensions such as:
+A minimal workflow:
 
-* Multiple species or life stages with distinct rates.
-* Dynamic weight fields (e.g., changing resource availability).
-* Disturbance events (e.g., fire, drought, grazing).
-* Alternative neighbourhood structures (e.g., Moore vs. von Neumann).
+```r
+# 1) Neutral spread (null model)
+neutral_plot <- c.neutral(num_iterations = 50, plot_interval = 10)
+neutral_plot
 
-By combining stochastic local rules with global environmental gradients, **cellulaR** provides a flexible tool for exploring spatially explicit ecological processes.
+# 2) Visualize a fractal landscape (heterogeneity)
+c.fractal()
+
+# 3) Spread on a heterogeneous (fractal) landscape
+res <- c.weighted(seed = 42)
+res$forest_evolution
+res$cover_plot
+```
+
+This matches the intended workflow described in the repo. ([GitHub][1])
 
 ---
 
-## 📚 References
+## 1. `c.neutral()`
 
-* Mandelbrot, B. B. (1982). *The Fractal Geometry of Nature.* W. H. Freeman & Company.
-* Rocchini, D. (2025). *cellulaR: Cellular Automata for Ecological Modelling.* GitHub repository: [https://github.com/ducciorocchini/cellulaR](https://github.com/ducciorocchini/cellulaR)
+### Purpose
+
+Simulate vegetation (or a generic “occupied/unoccupied” state) spreading on a **neutral landscape**, where all locations are equivalent and dynamics depend only on local neighborhood rules. ([GitHub][1])
+
+### Core idea
+
+* Start from a random grid of occupied/unoccupied cells
+* At each iteration:
+
+  * empty cells may become occupied if at least one neighbor is occupied (plus a small random colonization chance)
+  * occupied cells may die with a small probability (stress/disturbance)
+
+### Arguments
+
+* `num_iterations` *(default 50)*: number of simulation steps. ([GitHub][1])
+* `plot_interval` *(default 10)*: how often the state is plotted through time. ([GitHub][1])
+
+### Returns
+
+* A **multi-panel plot** showing spread through time. ([GitHub][1])
+
+### Example
+
+```r
+p <- c.neutral(num_iterations = 80, plot_interval = 10)
+p
+```
+
+### When to use
+
+Use `c.neutral()` as a **baseline/null expectation** for spread dynamics without environmental heterogeneity. ([GitHub][1])
 
 ---
 
-Would you like me to add **real defaults and argument descriptions** extracted automatically from each R script in that GitHub `/R` folder (so it matches the actual implementation)?
+## 2. `c.fractal()`
+
+### Purpose
+
+Generate a **fractal landscape** (heterogeneous surface) to represent spatial variability (e.g., habitat suitability or “elevation-like” gradients) using Perlin noise. ([GitHub][1])
+
+### What it does
+
+* Creates a fractal terrain (in the current version, key parameters are fixed in the function implementation)
+* Converts it into a tidy format
+* Plots it with `ggplot2` (viridis scale)
+
+### Arguments
+
+* No user-facing parameters in the current version. ([GitHub][1])
+  *(Grid size, frequency, and octaves are set internally—edit the function code if you want them configurable.)* ([GitHub][1])
+
+### Returns
+
+* A terrain (fractal) plot. ([GitHub][1])
+
+### Example
+
+```r
+c.fractal()
+```
+
+### When to use
+
+Use `c.fractal()` to **visualize and reason about landscape heterogeneity** before running a spread process on it. ([GitHub][1])
+
+---
+
+## 3. `c.weighted()`
+
+### Purpose
+
+Simulate spread on a **heterogeneous fractal landscape**, where growth probability varies spatially according to:
+
+* terrain value (e.g., “elevation/suitability”)
+* local roughness (slope)
+
+This introduces environmental control over spread, beyond pure neighbor effects. ([GitHub][1])
+
+### Conceptual model (as implemented)
+
+* Generate terrain via Perlin noise
+* Compute slope (roughness) and reduce growth on steep/rough areas
+* Growth probability follows the rule described in the repo (base growth scaled by terrain and slope) ([GitHub][1])
+* Iteratively update occupied/unoccupied state with:
+
+  * neighbor-driven colonization, weighted by local probability
+  * stochastic mortality
+
+### Arguments
+
+* `num_iterations` *(default 50)*: number of simulation steps. ([GitHub][1])
+* `plot_interval` *(default 10)*: how often to plot intermediate states. ([GitHub][1])
+* `n_rows`, `n_cols` *(default 100)*: grid dimensions. ([GitHub][1])
+* `frequency`, `octaves`: fractal terrain detail controls. ([GitHub][1])
+* `base_growth` *(default 0.1)*: baseline colonization probability. ([GitHub][1])
+* `death_prob` *(default 0.02)*: mortality probability. ([GitHub][1])
+* `seed` *(optional)*: reproducibility control. ([GitHub][1])
+
+### Returns
+
+A list of plots and data objects, including: ([GitHub][1])
+
+* `terrain_plot`: the fractal terrain
+* `slope_plot`: slope/roughness
+* `probability_plot`: spatial growth probability surface
+* `forest_evolution`: multi-panel spread over time
+* `cover_plot`: vegetation cover (%) through time
+* `cover_data`: cover values as a data frame
+
+### Example
+
+```r
+res <- c.weighted(
+  num_iterations = 60,
+  plot_interval = 10,
+  n_rows = 100, n_cols = 100,
+  frequency = 0.05, octaves = 5,
+  base_growth = 0.12,
+  death_prob = 0.02,
+  seed = 123
+)
+
+# Explore outputs
+res$terrain_plot
+res$slope_plot
+res$probability_plot
+res$forest_evolution
+res$cover_plot
+head(res$cover_data)
+```
+
+### Tips for parameter exploration
+
+* Increase `base_growth` to accelerate spread (but it may saturate quickly).
+* Increase `death_prob` to keep dynamics from saturating and to mimic disturbance regimes.
+* Tune `frequency` / `octaves` to change the patchiness of the underlying terrain. ([GitHub][1])
+
+---
+
+## Suggested analysis patterns
+
+### Sensitivity analysis
+
+You can explore how outcomes change across parameter grids:
+
+```r
+grid <- expand.grid(
+  base_growth = c(0.05, 0.10, 0.15),
+  death_prob  = c(0.01, 0.02, 0.05),
+  frequency   = c(0.03, 0.05),
+  octaves     = c(4, 5)
+)
+
+out <- lapply(seq_len(nrow(grid)), function(i){
+  g <- grid[i, ]
+  res <- c.weighted(
+    base_growth = g$base_growth,
+    death_prob  = g$death_prob,
+    frequency   = g$frequency,
+    octaves     = g$octaves,
+    seed = 1
+  )
+  data.frame(g, final_cover = tail(res$cover_data$cover, 1))
+})
+
+out <- do.call(rbind, out)
+out
+```
