@@ -38,10 +38,10 @@
 #'
 #' @examples
 #' # Run the simulation (may take a bit depending on grid size)
-#' res <- c_weighted(num_iterations = 50, n_rows = 50, n_cols = 50, seed = 1)
+#' res <- c.weighted(num_iterations = 50, n_rows = 50, n_cols = 50, seed = 1)
 #' res$forest_evolution
 #' res$cover_plot
-c_weighted <- function(
+c.weighted <- function(
   num_iterations = 100L,
   n_rows = 100L,
   n_cols = 100L,
@@ -52,7 +52,6 @@ c_weighted <- function(
   init_n = 200L,
   seed = NULL
 ) {
-  # Basic checks
   stopifnot(length(num_iterations) == 1, num_iterations >= 0)
   stopifnot(length(n_rows) == 1, n_rows >= 1)
   stopifnot(length(n_cols) == 1, n_cols >= 1)
