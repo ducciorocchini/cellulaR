@@ -27,13 +27,13 @@
 #'
 #' @examples
 #' # Run default simulation and display multi-panel plot
-#' p <- c_neutral()
+#' p <- c.neutral()
 #' p
 #'
 #' # More iterations, reproducible seed
-#' p2 <- c_neutral(num_iterations = 100, plot_interval = 20, seed = 1)
+#' p2 <- c.neutral(num_iterations = 100, plot_interval = 20, seed = 1)
 #' p2
-c_neutral <- function(
+c.neutral <- function(
   num_iterations = 50L,
   plot_interval = 10L,
   n_rows = 50L,
@@ -43,7 +43,6 @@ c_neutral <- function(
   p_die = 0.02,
   seed = NULL
 ) {
-  # Basic checks (lightweight but helpful for reviewers)
   stopifnot(length(num_iterations) == 1, num_iterations >= 0)
   stopifnot(length(plot_interval) == 1, plot_interval >= 1)
   stopifnot(length(n_rows) == 1, n_rows >= 1)
@@ -119,7 +118,7 @@ c_neutral <- function(
     grid <- update_grid(grid)
 
     if (i %% plot_interval == 0) {
-      plots[[length(plots) + 1]] <- plot_grid(grid, paste("Iteration", i))
+      plots[[length(plots) + 1L]] <- plot_grid(grid, paste("Iteration", i))
     }
   }
 
