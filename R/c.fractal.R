@@ -19,13 +19,13 @@
 #'
 #' @examples
 #' # Return a plot
-#' p <- c_fractal()
+#' p <- c.fractal()
 #' p
 #'
 #' # Return the numeric surface
-#' m <- c_fractal(output = "matrix", n = c(50, 50))
+#' m <- c.fractal(output = "matrix", n = c(50, 50))
 #' dim(m)
-c_fractal <- function(
+c.fractal <- function(
   n = c(100L, 100L),
   frequency = 0.05,
   octaves = 5L,
@@ -49,7 +49,7 @@ c_fractal <- function(
 
   ggplot2::ggplot(terrain_df, ggplot2::aes(x = x, y = y, fill = value)) +
     ggplot2::geom_raster() +
-    ggplot2::scale_fill_viridis_c(option = "D", direction = -1) +
+    viridis::scale_fill_viridis(option = "D", direction = -1) +
     ggplot2::coord_equal() +
     ggplot2::labs(
       title = "Fractal Landscape via Perlin Noise",
