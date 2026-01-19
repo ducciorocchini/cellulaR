@@ -1,7 +1,5 @@
 # Parameters in c.fractal() and c.weighted()
 
-Here is a clean **English translation**, keeping the technical tone and structure suitable for documentation or a response to reviewers.
-
 ## 1) `c.fractal()` → ongoing new parameters
 
 ### What I will add
