@@ -1,187 +1,61 @@
-#' Weight spread across slopes
+#' Weighted spread across slopes (terrain-weighted cellular automaton)
 #'
-#' @param x A raster object
-#' @return A raster
+#' Simulates a simple vegetation cellular automaton on a fractal terrain
+#' generated via Perlin noise. The probability of colonization depends on
+#' local elevation and slope (lower + flatter areas have higher growth
+#' probability).
+#'
+#' The function returns diagnostic maps (terrain, slope, growth probability),
+#' a multi-panel plot of vegetation dynamics, and a time series of vegetation
+#' cover.
+#'
+#' @param num_iterations Integer. Number of iterations to run the simulation.
+#'   Default is `100`.
+#' @param n_rows Integer. Number of grid rows. Default is `100`.
+#' @param n_cols Integer. Number of grid columns. Default is `100`.
+#' @param frequency Numeric. Frequency passed to [ambient::noise_perlin()].
+#'   Default is `0.05`.
+#' @param octaves Integer. Octaves passed to [ambient::noise_perlin()].
+#'   Default is `5`.
+#' @param base_growth Numeric in `[0,1]`. Baseline growth rate scaling the
+#'   spatial growth probability map. Default is `0.1`.
+#' @param death_prob Numeric in `[0,1]`. Probability of death per vegetated cell
+#'   per iteration. Default is `0.02`.
+#' @param init_n Integer. Number of initially vegetated cells. Default is `200`.
+#' @param seed Integer or `NULL`. If not `NULL`, sets a reproducible random seed.
+#'   Default is `NULL`.
+#'
+#' @return A named list with:
+#' \describe{
+#'   \item{terrain_plot}{A `ggplot2` raster plot of terrain elevation.}
+#'   \item{slope_plot}{A `ggplot2` raster plot of terrain slope.}
+#'   \item{probability_plot}{A `ggplot2` raster plot of growth probability.}
+#'   \item{forest_evolution}{A `patchwork` multi-panel plot of vegetation through time.}
+#'   \item{cover_plot}{A `ggplot2` line plot of vegetation cover (%) over time.}
+#'   \item{cover_data}{A `data.frame` with iteration and vegetation cover (%).}
+#' }
 #' @export
-
-c.weighted <- function(num_iterations = 100, plot_interval = 20,
-                                                  n_rows = 100, n_cols = 100,
-                                                  frequency = 0.05, octaves = 5,
-                                                  base_growth = 0.1, death_prob = 0.02,
-                                                  seed = NULL) {
-  # --- 1. Load packages ---
-  library(ggplot2)
-  library(patchwork)
-  library(ambient)
-  library(tidyverse)
-  library(viridis)
-  
-  # --- 2. Generate fractal terrain ---
-  if (!is.null(seed)) set.seed(seed)
-  terrain <- noise_perlin(c(n_rows, n_cols), frequency = frequency, octaves = octaves)
-  terrain <- (terrain - min(terrain)) / (max(terrain) - min(terrain))  # normalize to [0,1]
-  
-  # --- 3. Compute slope (roughness) ---
-  get_slope <- function(mat) {
-    slope <- matrix(0, nrow = nrow(mat), ncol = ncol(mat))
-    for (i in 2:(nrow(mat) - 1)) {
-      for (j in 2:(ncol(mat) - 1)) {
-        dx <- (mat[i, j + 1] - mat[i, j - 1]) / 2
-        dy <- (mat[i + 1, j] - mat[i - 1, j]) / 2
-        slope[i, j] <- sqrt(dx^2 + dy^2)
-      }
-    }
-    slope <- (slope - min(slope)) / (max(slope) - min(slope))
-    return(slope)
-  }
-  slope <- get_slope(terrain)
-  
-  # --- 4. Compute spatial growth probability map ---
-  growth_prob_map <- base_growth * (1 - terrain) * (1 - slope)
-  
-  # --- 5. Initialize vegetation grid ---
-  grid <- matrix(0, nrow = n_rows, ncol = n_cols)
-  grid[sample(1:(n_rows * n_cols), size = 200)] <- 1  # initial vegetation
-  
-  # --- 6. Helper functions ---
-  get_neighbors <- function(row, col, grid) {
-    neighbors <- c()
-    for (i in -1:1) {
-      for (j in -1:1) {
-        if (!(i == 0 & j == 0)) {
-          r <- row + i
-          c <- col + j
-          if (r > 0 & r <= nrow(grid) & c > 0 & c <= ncol(grid)) {
-            neighbors <- c(neighbors, grid[r, c])
-          }
-        }
-      }
-    }
-    return(neighbors)
-  }
-  
-  update_grid <- function(grid, prob_map) {
-    new_grid <- grid
-    for (row in 1:nrow(grid)) {
-      for (col in 1:ncol(grid)) {
-        # Growth depends on neighbors and local probability
-        if (grid[row, col] == 0) {
-          neighbors <- get_neighbors(row, col, grid)
-          if (sum(neighbors) > 0) {
-            if (runif(1) < prob_map[row, col]) {
-              new_grid[row, col] <- 1
-            }
-          }
-        }
-        # Death
-        if (grid[row, col] == 1 && runif(1) < death_prob) {
-          new_grid[row, col] <- 0
-        }
-      }
-    }
-    return(new_grid)
-  }
-  
-  # --- 7. Plot functions ---
-  plot_raster <- function(mat, title, legend_label) {
-    df <- expand.grid(x = 1:ncol(mat), y = 1:nrow(mat))
-    df$value <- as.vector(mat)
-    ggplot(df, aes(x = x, y = y, fill = value)) +
-      geom_raster() +
-      scale_fill_viridis(option = "C", direction = -1) +
-      labs(title = title, fill = legend_label) +
-      coord_equal() +
-      theme_minimal() +
-      theme(
-        axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        panel.grid = element_blank(),
-        plot.title = element_text(hjust = 0.5)
-      )
-  }
-  
-plot_grid <- function(grid, prob_map, title = "") {
-  df <- expand.grid(x = 1:ncol(grid), y = 1:nrow(grid))
-  df$value <- as.vector(grid)
-  df$prob <- as.vector(prob_map)
-  
-  ggplot(df, aes(x = x, y = y)) +
-    geom_raster(aes(fill = ifelse(value == 1, prob, NA))) +
-    scale_fill_viridis(option = "C", na.value = "white", direction = -1) +
-    labs(title = title, fill = "Prob.") +  # shorter legend title
-    coord_equal() +
-    theme_minimal() +
-    theme(
-      axis.text = element_blank(),
-      axis.ticks = element_blank(),
-      panel.grid = element_blank(),
-      plot.title = element_text(hjust = 0.5, size = 8),  # smaller iteration titles
-      legend.title = element_text(size = 8),   # smaller legend title
-      legend.text = element_text(size = 6),    # smaller legend labels
-      legend.key.size = unit(0.4, "cm")        # smaller legend key
-    )
-}
-  
-  # --- 8. Run simulation ---
-plots <- list()
-cover <- numeric(num_iterations + 1)
-cover[1] <- sum(grid) / (n_rows * n_cols)
-
-# Automatically pick 9 iterations (including 0 and the last iteration)
-plot_iterations <- round(seq(0, num_iterations, length.out = 9))
-
-# Run simulation
-for (i in 0:num_iterations) {
-  if (i > 0) {
-    grid <- update_grid(grid, growth_prob_map)
-    cover[i + 1] <- sum(grid) / (n_rows * n_cols)
-  }
-  
-  if (i %in% plot_iterations) {
-    p <- plot_grid(grid, growth_prob_map, paste("Iteration", i)) +
-      theme(
-        axis.text.x = element_text(size = 6),    # x-axis labels
-        axis.text.y = element_text(size = 6),    # y-axis labels
-        axis.title.x = element_text(size = 8),   # x-axis title 
-        axis.title.y = element_text(size = 8),   # y-axis title 
-        plot.title = element_text(size = 10)  # bigger title
-      )
-    plots[[length(plots) + 1]] <- p
-  }
-}
-
-# Arrange plots into a 3x3 grid
-final_plot <- wrap_plots(plots, ncol = 3)
-  
-  # --- 9. Vegetation cover time series ---
-  cover_df <- tibble(
-    iteration = 0:num_iterations,
-    vegetation_cover = cover * 100
-  )
-  
-  cover_plot <- ggplot(cover_df, aes(x = iteration, y = vegetation_cover)) +
-    geom_line(color = "forestgreen", linewidth = 1.2) +
-    geom_point(color = "darkgreen") +
-    theme_minimal() +
-    labs(
-      title = "Vegetation Cover Over Time",
-      x = "Iteration",
-      y = "Vegetation Cover (%)"
-    ) +
-    theme(plot.title = element_text(hjust = 0.5))
-  
-  # --- 10. Diagnostic maps ---
-  terrain_plot <- plot_raster(terrain, "Fractal Terrain (Elevation)", "Elevation")
-  slope_plot <- plot_raster(slope, "Slope (Steepness)", "Slope")
-  prob_plot <- plot_raster(growth_prob_map, "Probability of Vegetation Growth", "Growth Probability")
-  
-  # --- 11. Return results ---
-  return(list(
-    terrain_plot = terrain_plot,
-    slope_plot = slope_plot,
-    probability_plot = prob_plot,
-    forest_evolution = final_plot,
-    cover_plot = cover_plot,
-    cover_data = cover_df
-  ))
-}
+#'
+#' @examples
+#' # Run the simulation (may take a bit depending on grid size)
+#' res <- c_weighted(num_iterations = 50, n_rows = 50, n_cols = 50, seed = 1)
+#' res$forest_evolution
+#' res$cover_plot
+c_weighted <- function(
+  num_iterations = 100L,
+  n_rows = 100L,
+  n_cols = 100L,
+  frequency = 0.05,
+  octaves = 5L,
+  base_growth = 0.1,
+  death_prob = 0.02,
+  init_n = 200L,
+  seed = NULL
+) {
+  # Basic checks
+  stopifnot(length(num_iterations) == 1, num_iterations >= 0)
+  stopifnot(length(n_rows) == 1, n_rows >= 1)
+  stopifnot(length(n_cols) == 1, n_cols >= 1)
+  stopifnot(base_growth >= 0, base_growth <= 1)
+  stopifnot(death_prob  >= 0, death_prob  <= 1)
+  st
