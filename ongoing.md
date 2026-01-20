@@ -130,6 +130,9 @@ Below is an updated version consistent with your existing code, **with the new a
 #'   `"von_neumann"` (4 neighbors). Default is `"moore"`.
 #' @param plot_n Integer. Number of snapshots displayed in the evolution plot.
 #'   Default is `9`.
+#' @param direction Integer. Color direction for the viridis palette: `1` maps
+#'   high values to yellow and low values to violet, while `-1` reverses this.
+#'   Default is `1`.
 #' @param return_model Logical. If `TRUE`, returns a `model` element containing
 #'   terrain, slope, growth probability, and the final vegetation grid.
 #'   Default is `TRUE`.
@@ -154,7 +157,7 @@ Below is an updated version consistent with your existing code, **with the new a
 #' res <- c.weighted(
 #'   num_iterations = 50, n_rows = 50, n_cols = 50,
 #'   alpha_slope = 2, neighbor_threshold = 2,
-#'   kernel = "moore", seed = 1
+#'   kernel = "moore", direction = 1, seed = 1
 #' )
 #' res$forest_evolution
 #' res$cover_plot
@@ -174,6 +177,7 @@ c.weighted <- function(
   neighbor_threshold = 1L,
   kernel = c("moore", "von_neumann"),
   plot_n = 9L,
+  direction = 1L,
   return_model = TRUE,
   seed = NULL
 ) {
@@ -188,6 +192,7 @@ c.weighted <- function(
   stopifnot(alpha_slope >= 0)
   stopifnot(neighbor_threshold >= 0)
   stopifnot(plot_n >= 2)
+  stopifnot(direction %in% c(-1L, 1L))
 
   kernel <- match.arg(kernel)
   if (!is.null(seed)) set.seed(seed)
@@ -271,7 +276,7 @@ c.weighted <- function(
 
     ggplot2::ggplot(df, ggplot2::aes(x = x, y = y, fill = value)) +
       ggplot2::geom_raster() +
-      viridis::scale_fill_viridis(option = "C", direction = -1) +
+      viridis::scale_fill_viridis(option = "C", direction = direction) +
       ggplot2::labs(title = title, fill = legend_label) +
       ggplot2::coord_equal() +
       ggplot2::theme_minimal() +
@@ -290,7 +295,7 @@ c.weighted <- function(
 
     ggplot2::ggplot(df, ggplot2::aes(x = x, y = y)) +
       ggplot2::geom_raster(ggplot2::aes(fill = ifelse(value == 1, prob, NA_real_))) +
-      viridis::scale_fill_viridis(option = "C", na.value = "white", direction = -1) +
+      viridis::scale_fill_viridis(option = "C", na.value = "white", direction = direction) +
       ggplot2::labs(title = title, fill = "Prob.") +
       ggplot2::coord_equal() +
       ggplot2::theme_minimal() +
