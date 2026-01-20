@@ -80,7 +80,7 @@ c.weighted <- function(
   neighbor_threshold = 1L,
   kernel = c("moore", "von_neumann"),
   plot_n = 9L,
-  direction = 1L,
+  direction = -1L,
   return_model = TRUE,
   seed = NULL
 ) {
