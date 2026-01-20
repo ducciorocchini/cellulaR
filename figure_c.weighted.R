@@ -34,7 +34,7 @@ p5 <- weighted_sim$cover_plot
 # Combine them using patchwork
 # Arrange terrain, slope, and probability on top;
 # forest evolution and cover on bottom.
-multi_plot <- (p1 | p2 | p3)
+multiplot <- (p1 | p2 | p3)
 multiplot
 
 p4
