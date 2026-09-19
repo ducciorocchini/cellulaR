@@ -10,10 +10,10 @@
 #' and (optionally) a full model object including terrain/slope/probability and
 #' the final vegetation grid.
 #'
-#' @param num_iterations Integer. Number of iterations to run the simulation.
-#'   Default is `100`.
 #' @param n_rows Integer. Number of grid rows. Default is `100`.
 #' @param n_cols Integer. Number of grid columns. Default is `100`.
+#' @param num_iterations Integer. Number of iterations to run the simulation.
+#'   Default is `100`.
 #' @param frequency Numeric. Frequency passed to [ambient::noise_perlin()].
 #'   Default is `0.05`.
 #' @param octaves Integer. Octaves passed to [ambient::noise_perlin()].
@@ -58,18 +58,23 @@
 #' @examples
 #' \dontrun{
 #' res <- c.weighted(
-#'   num_iterations = 50, n_rows = 50, n_cols = 50,
-#'   alpha_slope = 2, neighbor_threshold = 2,
-#'   kernel = "moore", direction = 1, seed = 1
+#'   n_rows = 50,
+#'   n_cols = 50,
+#'   num_iterations = 50,
+#'   alpha_slope = 2,
+#'   neighbor_threshold = 2,
+#'   kernel = "moore",
+#'   direction = 1,
+#'   seed = 1
 #' )
 #' res$forest_evolution
 #' res$cover_plot
 #' str(res$model)
 #' }
 c.weighted <- function(
-  num_iterations = 100L,
   n_rows = 100L,
   n_cols = 100L,
+  num_iterations = 100L,
   frequency = 0.05,
   octaves = 5L,
   base_growth = 0.1,
@@ -101,8 +106,12 @@ c.weighted <- function(
   if (!is.null(seed)) set.seed(seed)
 
   # ---- 1) terrain ----
-  terrain <- ambient::noise_perlin(c(n_rows, n_cols), frequency = frequency, octaves = octaves)
-  terrain <- (terrain - min(terrain)) / (max(terrain) - min(terrain))  # normalize [0,1]
+  terrain <- ambient::noise_perlin(
+    c(n_rows, n_cols),
+    frequency = frequency,
+    octaves = octaves
+  )
+  terrain <- (terrain - min(terrain)) / (max(terrain) - min(terrain))
 
   # ---- 2) slope (finite differences) ----
   get_slope <- function(mat) {
@@ -120,67 +129,105 @@ c.weighted <- function(
     if (max(slope) > min(slope)) {
       slope <- (slope - min(slope)) / (max(slope) - min(slope))
     }
+
     slope
   }
+
   slope <- get_slope(terrain)
 
   # ---- 3) growth probability map (tunable) ----
-  growth_prob_map <- base_growth * (1 - terrain)^alpha_elev * (1 - slope)^alpha_slope
+  growth_prob_map <- base_growth *
+    (1 - terrain)^alpha_elev *
+    (1 - slope)^alpha_slope
+
   growth_prob_map[growth_prob_map < 0] <- 0
   growth_prob_map[growth_prob_map > 1] <- 1
 
   # ---- 4) init grid ----
   grid <- matrix(0L, nrow = n_rows, ncol = n_cols)
-  if (init_n > 0) grid[sample.int(n_rows * n_cols, size = init_n)] <- 1L
+
+  if (init_n > 0) {
+    grid[sample.int(n_rows * n_cols, size = init_n)] <- 1L
+  }
 
   # ---- 5) neighborhood + update rules ----
   get_neighbors <- function(row, col, grid) {
     vals <- integer(0)
-    for (i in -1:1) for (j in -1:1) {
-      if (i == 0 && j == 0) next
 
-      # von Neumann: only N/S/E/W
-      if (kernel == "von_neumann" && (abs(i) + abs(j) != 1)) next
+    for (i in -1:1) {
+      for (j in -1:1) {
 
-      rr <- row + i
-      cc <- col + j
-      if (rr >= 1 && rr <= nrow(grid) && cc >= 1 && cc <= ncol(grid)) {
-        vals <- c(vals, grid[rr, cc])
+        if (i == 0 && j == 0) next
+
+        if (kernel == "von_neumann" && (abs(i) + abs(j) != 1)) next
+
+        rr <- row + i
+        cc <- col + j
+
+        if (
+          rr >= 1 &&
+          rr <= nrow(grid) &&
+          cc >= 1 &&
+          cc <= ncol(grid)
+        ) {
+          vals <- c(vals, grid[rr, cc])
+        }
       }
     }
+
     vals
   }
 
   update_grid <- function(grid, prob_map) {
     new_grid <- grid
+
     for (row in seq_len(nrow(grid))) {
       for (col in seq_len(ncol(grid))) {
 
         if (grid[row, col] == 0L) {
           nb <- get_neighbors(row, col, grid)
-          if (sum(nb) >= neighbor_threshold && stats::runif(1) < prob_map[row, col]) {
+
+          if (
+            sum(nb) >= neighbor_threshold &&
+            stats::runif(1) < prob_map[row, col]
+          ) {
             new_grid[row, col] <- 1L
           }
+
         } else {
+
           if (stats::runif(1) < death_prob) {
             new_grid[row, col] <- 0L
           }
         }
-
       }
     }
+
     new_grid
   }
 
   # ---- 6) plot helpers ----
   plot_raster <- function(mat, title, legend_label) {
-    df <- expand.grid(x = seq_len(ncol(mat)), y = seq_len(nrow(mat)))
+    df <- expand.grid(
+      x = seq_len(ncol(mat)),
+      y = seq_len(nrow(mat))
+    )
+
     df$value <- as.vector(mat)
 
-    ggplot2::ggplot(df, ggplot2::aes(x = x, y = y, fill = value)) +
+    ggplot2::ggplot(
+      df,
+      ggplot2::aes(x = x, y = y, fill = value)
+    ) +
       ggplot2::geom_raster() +
-      viridis::scale_fill_viridis(option = "C", direction = direction) +
-      ggplot2::labs(title = title, fill = legend_label) +
+      viridis::scale_fill_viridis(
+        option = "C",
+        direction = direction
+      ) +
+      ggplot2::labs(
+        title = title,
+        fill = legend_label
+      ) +
       ggplot2::coord_equal() +
       ggplot2::theme_minimal() +
       ggplot2::theme(
@@ -192,14 +239,32 @@ c.weighted <- function(
   }
 
   plot_grid <- function(grid, prob_map, title = "") {
-    df <- expand.grid(x = seq_len(ncol(grid)), y = seq_len(nrow(grid)))
-    df$value <- as.vector(grid)
-    df$prob  <- as.vector(prob_map)
+    df <- expand.grid(
+      x = seq_len(ncol(grid)),
+      y = seq_len(nrow(grid))
+    )
 
-    ggplot2::ggplot(df, ggplot2::aes(x = x, y = y)) +
-      ggplot2::geom_raster(ggplot2::aes(fill = ifelse(value == 1, prob, NA_real_))) +
-      viridis::scale_fill_viridis(option = "C", na.value = "white", direction = direction) +
-      ggplot2::labs(title = title, fill = "Prob.") +
+    df$value <- as.vector(grid)
+    df$prob <- as.vector(prob_map)
+
+    ggplot2::ggplot(
+      df,
+      ggplot2::aes(x = x, y = y)
+    ) +
+      ggplot2::geom_raster(
+        ggplot2::aes(
+          fill = ifelse(value == 1, prob, NA_real_)
+        )
+      ) +
+      viridis::scale_fill_viridis(
+        option = "C",
+        na.value = "white",
+        direction = direction
+      ) +
+      ggplot2::labs(
+        title = title,
+        fill = "Prob."
+      ) +
       ggplot2::coord_equal() +
       ggplot2::theme_minimal() +
       ggplot2::theme(
@@ -208,7 +273,7 @@ c.weighted <- function(
         panel.grid = ggplot2::element_blank(),
         plot.title = ggplot2::element_text(hjust = 0.5, size = 8),
         legend.title = ggplot2::element_text(size = 8),
-        legend.text  = ggplot2::element_text(size = 6),
+        legend.text = ggplot2::element_text(size = 6),
         legend.key.size = grid::unit(0.4, "cm")
       )
   }
@@ -218,19 +283,31 @@ c.weighted <- function(
   cover <- numeric(num_iterations + 1L)
   cover[1] <- sum(grid) / (n_rows * n_cols)
 
-  plot_iterations <- unique(round(seq(0, num_iterations, length.out = plot_n)))
+  plot_iterations <- unique(
+    round(seq(0, num_iterations, length.out = plot_n))
+  )
 
   for (i in 0:num_iterations) {
+
     if (i > 0) {
       grid <- update_grid(grid, growth_prob_map)
       cover[i + 1L] <- sum(grid) / (n_rows * n_cols)
     }
+
     if (i %in% plot_iterations) {
-      plots[[length(plots) + 1L]] <- plot_grid(grid, growth_prob_map, paste("Iteration", i))
+      plots[[length(plots) + 1L]] <-
+        plot_grid(
+          grid,
+          growth_prob_map,
+          paste("Iteration", i)
+        )
     }
   }
 
-  forest_evolution <- patchwork::wrap_plots(plots, ncol = 3)
+  forest_evolution <- patchwork::wrap_plots(
+    plots,
+    ncol = 3
+  )
 
   # ---- 8) cover time series ----
   cover_df <- data.frame(
@@ -238,21 +315,48 @@ c.weighted <- function(
     vegetation_cover = cover * 100
   )
 
-  cover_plot <- ggplot2::ggplot(cover_df, ggplot2::aes(x = iteration, y = vegetation_cover)) +
-    ggplot2::geom_line(color = "forestgreen", linewidth = 1.2) +
-    ggplot2::geom_point(color = "darkgreen") +
+  cover_plot <- ggplot2::ggplot(
+    cover_df,
+    ggplot2::aes(
+      x = iteration,
+      y = vegetation_cover
+    )
+  ) +
+    ggplot2::geom_line(
+      color = "forestgreen",
+      linewidth = 1.2
+    ) +
+    ggplot2::geom_point(
+      color = "darkgreen"
+    ) +
     ggplot2::theme_minimal() +
     ggplot2::labs(
       title = "Vegetation Cover Over Time",
       x = "Iteration",
       y = "Vegetation Cover (%)"
     ) +
-    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+    ggplot2::theme(
+      plot.title = ggplot2::element_text(hjust = 0.5)
+    )
 
   # ---- 9) diagnostic maps ----
-  terrain_plot <- plot_raster(terrain, "Fractal Terrain (Elevation)", "Elevation")
-  slope_plot   <- plot_raster(slope, "Slope (Steepness)", "Slope")
-  prob_plot    <- plot_raster(growth_prob_map, "Probability of Vegetation Growth", "Growth Probability")
+  terrain_plot <- plot_raster(
+    terrain,
+    "Fractal Terrain (Elevation)",
+    "Elevation"
+  )
+
+  slope_plot <- plot_raster(
+    slope,
+    "Slope (Steepness)",
+    "Slope"
+  )
+
+  prob_plot <- plot_raster(
+    growth_prob_map,
+    "Probability of Vegetation Growth",
+    "Growth Probability"
+  )
 
   # ---- 10) return ----
   out <- list(
