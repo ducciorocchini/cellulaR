@@ -8,7 +8,8 @@ and graphical appearance.
 }
 \usage{
 c.fractal(
-  n = c(100L, 100L),
+  n_rows = 100L,
+  n_cols = 100L,
   frequency = 0.05,
   octaves = 5L,
   seed = NULL,
@@ -21,8 +22,11 @@ c.fractal(
 )
 }
 \arguments{
-  \item{n}{
-Integer vector of length two giving the number of rows and columns of the grid.
+  \item{n_rows}{
+Integer specifying the number of rows of the grid.
+}
+  \item{n_cols}{
+Integer specifying the number of columns of the grid.
 }
   \item{frequency}{
 Numeric value controlling the spatial frequency (roughness) of the Perlin noise.
@@ -77,6 +81,8 @@ mat <- c.fractal(output = "matrix")
 
 # Reproducible landscape with custom appearance
 c.fractal(
+  n_rows = 100,
+  n_cols = 100,
   seed = 1,
   frequency = 0.03,
   octaves = 6,
