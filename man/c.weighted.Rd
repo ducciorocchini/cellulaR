@@ -8,9 +8,9 @@ and can be tuned using exponents and neighborhood rules.
 }
 \usage{
 c.weighted(
-  num_iterations = 100L,
   n_rows = 100L,
   n_cols = 100L,
+  num_iterations = 100L,
   frequency = 0.05,
   octaves = 5L,
   base_growth = 0.1,
@@ -27,14 +27,14 @@ c.weighted(
 )
 }
 \arguments{
-  \item{num_iterations}{
-Integer. Number of iterations to run the simulation.
-}
   \item{n_rows}{
 Integer. Number of grid rows.
 }
   \item{n_cols}{
 Integer. Number of grid columns.
+}
+  \item{num_iterations}{
+Integer. Number of iterations to run the simulation.
 }
   \item{frequency}{
 Numeric. Spatial frequency passed to \code{\link[ambient]{noise_perlin}}.
@@ -109,9 +109,9 @@ cells die with probability \code{death_prob}.
 \examples{
 \dontrun{
 res <- c.weighted(
-  num_iterations = 50,
   n_rows = 50,
   n_cols = 50,
+  num_iterations = 50,
   alpha_slope = 2,
   neighbor_threshold = 2,
   kernel = "moore",
