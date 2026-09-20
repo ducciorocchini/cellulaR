@@ -6,9 +6,9 @@ library(cellulaR)
 # Run the weighted simulation
 weighted_sim <- 
 c.weighted(
-  num_iterations = 100,
   n_rows = 100,
   n_cols = 100,
+  num_iterations = 100,  
   frequency = 0.05,
   octaves = 5,
   base_growth = 0.1,
